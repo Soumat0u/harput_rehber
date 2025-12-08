@@ -607,7 +607,6 @@ window.onclick = (event) => {
     if (event.target == tutorialModal) tutorialModal.style.display = "none";
 }
 
-// --- SİTE İLK AÇILDIĞINDA REHBER PENCERESİNİ GÖSTER ---
 document.addEventListener("DOMContentLoaded", function() {
     // 'tutorial-id' kısmını kendi pencerenizin ID'si ile değiştirin
     const tutorialPenceresi = document.getElementById("tutorial-modal");
@@ -618,4 +617,3 @@ document.addEventListener("DOMContentLoaded", function() {
         // Veya bir class ekliyorsanız: tutorialPenceresi.classList.add("aktif");
     }
 });
-
