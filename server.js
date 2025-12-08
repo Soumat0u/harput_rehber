@@ -1,84 +1,110 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg'); // SQLite yerine PG kullanıyoruz
+const fs = require('fs');
 const path = require('path');
-const fs = require('fs'); // Dosya sistemi modülü
 
 const app = express();
-const db = new sqlite3.Database('./database.db');
+const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-// Veritabanı Tablosunu Oluştur
-db.serialize(() => {
-    db.run("CREATE TABLE IF NOT EXISTS comments (id INTEGER PRIMARY KEY AUTOINCREMENT, place TEXT, name TEXT, comment TEXT, date TEXT)");
+// --- VERİTABANI BAĞLANTISI ---
+// Render, bağlantı linkini 'DATABASE_URL' içine koyar.
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false // Render için gerekli SSL ayarı
+    }
 });
 
-// Yorum Kaydetme (API)
-app.post('/yorum-yap', (req, res) => {
+// --- TABLOYU OLUŞTUR (Eğer yoksa) ---
+const createTableQuery = `
+    CREATE TABLE IF NOT EXISTS comments (
+        id SERIAL PRIMARY KEY,
+        place TEXT NOT NULL,
+        name TEXT NOT NULL,
+        comment TEXT NOT NULL,
+        date TEXT NOT NULL
+    );
+`;
+
+pool.query(createTableQuery)
+    .then(() => console.log("Tablo kontrol edildi / oluşturuldu."))
+    .catch(err => console.error("Tablo oluşturma hatası:", err));
+
+
+// --- 1. Yorum Kaydetme (POST) ---
+app.post('/yorum-yap', async (req, res) => {
     const { place_name, user_name, user_comment } = req.body;
     const date = new Date().toLocaleString('tr-TR');
 
-    const stmt = db.prepare("INSERT INTO comments (place, name, comment, date) VALUES (?, ?, ?, ?)");
-    stmt.run(place_name, user_name, user_comment, date, function(err) {
-        if (err) {
-            console.error(err.message);
-            res.status(500).send("Hata oluştu.");
-        } else {
-            // Başarılı olunca kullanıcıyı geri yönlendir
-            res.redirect('/?status=success');
-        }
-    });
-    stmt.finalize();
+    try {
+        // Postgres'te '?' yerine '$1, $2' kullanılır
+        const query = "INSERT INTO comments (place, name, comment, date) VALUES ($1, $2, $3, $4)";
+        await pool.query(query, [place_name, user_name, user_comment, date]);
+        res.redirect('/?status=success');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Veritabanı hatası oluştu.");
+    }
 });
 
-// GİZLİ ADMİN PANELİ (Sadece sen bilmelisin)
-// Tarayıcıdan http://localhost:3000/yonetici-paneli adresine giderek yorumları görebilirsin.
-app.get('/yonetici-paneli', (req, res) => {
-    db.all("SELECT * FROM comments ORDER BY id DESC", [], (err, rows) => {
-        if (err) {
-            throw err;
+// --- 2. Yorumları GETİR (GET) ---
+app.get('/api/comments', async (req, res) => {
+    const placeFilter = req.query.place; 
+    
+    try {
+        let query = "SELECT * FROM comments ORDER BY id DESC";
+        let params = [];
+
+        if (placeFilter) {
+            query = "SELECT * FROM comments WHERE place = $1 ORDER BY id DESC";
+            params = [placeFilter];
         }
-        let html = "<h1>Gelen Yorumlar (Sadece Yönetici)</h1><table border='1'><tr><th>Mekan</th><th>İsim</th><th>Yorum</th><th>Tarih</th></tr>";
-        rows.forEach((row) => {
-            html += `<tr><td>${row.place}</td><td>${row.name}</td><td>${row.comment}</td><td>${row.date}</td></tr>`;
-        });
-        html += "</table>";
-        res.send(html);
-    });
+
+        const result = await pool.query(query, params);
+        res.json(result.rows); // Postgres sonuçları 'rows' içinde verir
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Veri çekilemedi" });
+    }
 });
 
-// ... Diğer app.get kodlarının yanına ekle ...
+// --- 3. Yorum SİL (DELETE) ---
+app.delete('/api/comments/:id', async (req, res) => {
+    const id = req.params.id;
+    
+    try {
+        const query = "DELETE FROM comments WHERE id = $1";
+        await pool.query(query, [id]);
+        res.json({ message: "Silindi" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Silinemedi" });
+    }
+});
 
-// MEKAN RESİMLERİNİ OTOMATİK GETİREN API
+// --- 4. MEKAN RESİMLERİNİ GETİR ---
 app.get('/api/images/:id', (req, res) => {
     const placeId = req.params.id;
-    // Klasör yolunu bul: public/images/1 gibi
-    const directoryPath = path.join(__dirname, 'public', 'images', placeId);
+    const directoryPath = path.join(__dirname, 'public', 'images', placeId.toString());
 
-    // Klasörü oku
     fs.readdir(directoryPath, (err, files) => {
         if (err) {
-            // Klasör yoksa veya hata varsa boş liste dön
             return res.json([]);
         }
-
-        // Sadece resim dosyalarını filtrele (jpg, png, jpeg, webp)
         const imageFiles = files.filter(file => 
             /\.(jpg|jpeg|png|gif|webp)$/i.test(file)
         );
-
-        // Web için tam yolları oluştur: "images/1/foto.jpg"
         const imagePaths = imageFiles.map(file => `images/${placeId}/${file}`);
-        
-        // Listeyi frontend'e gönder
         res.json(imagePaths);
     });
 });
 
 // Sunucuyu Başlat
-app.listen(3000, () => {
-    console.log('Sunucu çalışıyor: http://localhost:3000');
+app.listen(PORT, () => {
+    console.log(`Sunucu çalışıyor: Port ${PORT}`);
 });

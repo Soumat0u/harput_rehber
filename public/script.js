@@ -8,7 +8,6 @@ L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
     subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
 }).addTo(map);
 
-
 var redIcon = L.icon({
     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
@@ -17,9 +16,6 @@ var redIcon = L.icon({
     popupAnchor: [1, -34],
     shadowSize: [41, 41]
 });
-
-
-
 
 // --- GÜNCELLENMİŞ VE DETAYLANDIRILMIŞ İÇERİK ---
 const places = [
@@ -220,12 +216,12 @@ const places = [
 const placeList = document.getElementById('place-list');
 const modal = document.getElementById('modal');
 
-// --- DÖNGÜ VE İŞLEVLER ---
+// --- DÖNGÜ: Harita ve Liste Oluşturma ---
 places.forEach(place => {
     // Haritaya Marker Ekle
     const marker = L.marker([place.lat, place.lng], {icon: redIcon}).addTo(map);
     
-    // Harita ikonuna tıklayınca MODAL AÇ
+    // Marker'a tıklayınca MODAL AÇ
     marker.on('click', () => openModal(place));
 
     // Sol Listeye Ekle
@@ -238,37 +234,34 @@ places.forEach(place => {
             item.classList.remove('active');
         });
         li.classList.add('active');
-        map.flyTo([place.lat, place.lng], 18);
+        map.flyTo([place.lat, place.lng], 14);
     };
     
     placeList.appendChild(li);
 });
 
-// -- SIDEBAR AÇMA / KAPAMA
+// --- SIDEBAR AÇMA / KAPAMA ---
 const sidebar = document.getElementById('sidebar');
 const toggleBtn = document.getElementById('toggle-btn');
 
 if (sidebar && toggleBtn) {
     toggleBtn.onclick = () => {
-        // Hem Sidebar'a hem Butona 'closed' sınıfını ekle/çıkar
         sidebar.classList.toggle('closed');
         toggleBtn.classList.toggle('closed');
         
-        // Ok yönünü değiştir
         if (sidebar.classList.contains('closed')) {
             toggleBtn.textContent = '❯'; 
         } else {
             toggleBtn.textContent = '❮'; 
         }
 
-        // Haritayı Yenile
         setTimeout(() => {
             map.invalidateSize();
         }, 400);
     };
 }
 
-// Toast Bildirim Kontrolü
+// --- TOAST BİLDİRİM ---
 const urlParams = new URLSearchParams(window.location.search);
 if(urlParams.get('status') === 'success'){
     showToast();
@@ -277,75 +270,327 @@ if(urlParams.get('status') === 'success'){
 
 function showToast() {
     const toast = document.getElementById("toast-message");
-    toast.classList.remove("hidden");
-    setTimeout(() => {
-        toast.classList.add("hidden");
-    }, 3000);
+    if(toast) {
+        toast.classList.remove("hidden");
+        setTimeout(() => {
+            toast.classList.add("hidden");
+        }, 3000);
+    }
 }
 
-// --- GALERİ VE MODAL MANTIĞI ---
+// --- MEKAN BİLGİ KARTI (MODAL) MANTIĞI ---
 let currentImageIndex = 0;
 let currentPlaceImages = [];
 
-// GÜNCELLENMİŞ OTOMATİK RESİM ÇEKEN MODAL FONKSİYONU
 function openModal(place) {
-    // 1. Yazıları Doldur
+    // 1. Bilgileri Doldur
     document.getElementById('modal-title').textContent = place.name;
     document.getElementById('modal-desc').textContent = place.desc;
     document.getElementById('modal-evliya').textContent = `"${place.evliya}"`;
     document.getElementById('place_name_input').value = place.name;
     
-    // 2. Resimleri Sunucudan İste (API)
-    // Eğer listede id yazmayı unuttuysan sırasını kullan (place.id || index)
+    // 2. GİRİŞ KONTROLÜ
+    const savedName = localStorage.getItem('student_name');
+    
+    const commentSection = document.getElementById('comment-section');
+    const warningSection = document.getElementById('login-warning-section');
+    const hiddenNameInput = document.getElementById('hidden_user_name');
+    const commenterDisplay = document.getElementById('commenter-display');
+
+    if (savedName) {
+        commentSection.style.display = 'block'; 
+        warningSection.style.display = 'none';  
+        hiddenNameInput.value = savedName;      
+        commenterDisplay.textContent = savedName; 
+    } else {
+        commentSection.style.display = 'none';  
+        warningSection.style.display = 'block'; 
+    }
+
+    // 3. Resimleri Sunucudan İste
     const folderId = place.id; 
 
     fetch(`/api/images/${folderId}`)
         .then(response => response.json())
         .then(images => {
-            if (images.length > 0) {
+            if (images && images.length > 0) {
                 currentPlaceImages = images;
             } else {
-                // Klasörde resim yoksa varsayılan resim koy
                 currentPlaceImages = ["https://via.placeholder.com/600x400?text=Resim+Yok"];
             }
-            
-            // Galeriyi başlat
             currentImageIndex = 0;
             updateModalImage();
-            modal.style.display = "flex";
+            modal.style.display = "flex"; 
         })
         .catch(err => {
             console.error("Resim yüklenirken hata:", err);
+            currentPlaceImages = ["https://via.placeholder.com/600x400?text=Resim+Bulunamadi"];
+            updateModalImage();
+            modal.style.display = "flex";
         });
-}
 
+    // 4. (SİLİNDİ) ÖĞRENCİLER ARTIK YORUMLARI GÖREMEYECEK.
+} // <-- BURADAKİ PARANTEZ EKSİKTİ, DÜZELTİLDİ.
 
 function updateModalImage() {
     const imgElement = document.getElementById('modal-img');
     const counterElement = document.getElementById('image-counter');
-    
-    imgElement.src = currentPlaceImages[currentImageIndex];
-    counterElement.textContent = `${currentImageIndex + 1} / ${currentPlaceImages.length}`;
+    if(imgElement && currentPlaceImages.length > 0) {
+        imgElement.src = currentPlaceImages[currentImageIndex];
+        counterElement.textContent = `${currentImageIndex + 1} / ${currentPlaceImages.length}`;
+    }
 }
 
-// İleri - Geri Butonları
 document.getElementById('next-btn').onclick = () => {
-    currentImageIndex = (currentImageIndex + 1) % currentPlaceImages.length;
-    updateModalImage();
+    if(currentPlaceImages.length > 0) {
+        currentImageIndex = (currentImageIndex + 1) % currentPlaceImages.length;
+        updateModalImage();
+    }
 };
 
 document.getElementById('prev-btn').onclick = () => {
-    currentImageIndex = (currentImageIndex - 1 + currentPlaceImages.length) % currentPlaceImages.length;
-    updateModalImage();
+    if(currentPlaceImages.length > 0) {
+        currentImageIndex = (currentImageIndex - 1 + currentPlaceImages.length) % currentPlaceImages.length;
+        updateModalImage();
+    }
 };
 
-// Modalı Kapatma
-document.querySelector('.close-btn').onclick = () => {
-    modal.style.display = "none";
+// --- ÖĞRETMEN PANELİ MANTIĞI ---
+
+const loginModal = document.getElementById('login-modal');
+const dashboardModal = document.getElementById('dashboard-modal');
+const adminPassInput = document.getElementById('admin-pass');
+const loginErrorMsg = document.getElementById('login-error');
+const commentsBody = document.getElementById('comments-body');
+
+const ogretmenBtn = document.getElementById('ogretmen-giris');
+if (ogretmenBtn) {
+    ogretmenBtn.onclick = () => {
+        loginModal.style.display = "flex";
+        adminPassInput.value = "";
+        loginErrorMsg.style.display = "none";
+        adminPassInput.focus();
+    };
 }
 
-window.onclick = (event) => {
-    if (event.target == modal) {
-        modal.style.display = "none";
+// DÜZELTME: ID Eşleşmesi sağlandı (HTML'de tutorial-button idi)
+const tutorialBtn = document.getElementById('tutorial-button');
+if (tutorialBtn) {
+    tutorialBtn.onclick = () => {
+        alert("Haritadaki kırmızı noktalara tıklayarak mekanları keşfedebilir, sol menüden hızlı geçiş yapabilirsiniz. Öğretmenler giriş yaparak yorumları yönetebilir.");
+    };
+}
+
+document.getElementById('admin-login-btn').onclick = () => {
+    attemptLogin();
+};
+
+if(adminPassInput){
+    adminPassInput.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            attemptLogin();
+        }
+    });
+}
+
+function attemptLogin() {
+    const password = adminPassInput.value;
+    if (password === "1234") {
+        loginModal.style.display = "none";     
+        dashboardModal.style.display = "flex"; 
+        loadAdminComments();                   
+    } else {
+        loginErrorMsg.style.display = "block";
     }
+}
+
+function loadAdminComments() {
+    fetch('/api/comments')
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById('grouped-comments-container');
+            const noCommentsMsg = document.getElementById('no-comments-msg');
+            
+            // Önce temizle
+            container.innerHTML = "";
+
+            if (data.length === 0) {
+                if(noCommentsMsg) noCommentsMsg.style.display = 'block';
+                return;
+            }
+            
+            if(noCommentsMsg) noCommentsMsg.style.display = 'none';
+
+            // --- 1. VERİLERİ İSME GÖRE GRUPLA ---
+            const groupedData = {};
+            
+            data.forEach(item => {
+                if (!groupedData[item.name]) {
+                    groupedData[item.name] = [];
+                }
+                groupedData[item.name].push(item);
+            });
+
+            // --- 2. HER GRUP İÇİN KART OLUŞTUR ---
+            Object.keys(groupedData).forEach(studentName => {
+                const comments = groupedData[studentName];
+
+                // --- [YENİ EKLENEN] MEKAN NUMARASINA GÖRE SIRALAMA ---
+                // Mekan isimleri "1. Aşvan", "10. Hazar" gibi olduğu için
+                // parseInt ile baştaki sayıyı alıp ona göre kıyaslıyoruz.
+                comments.sort((a, b) => {
+                    const numA = parseInt(a.place); // "1. Aşvan..." -> 1 olur
+                    const numB = parseInt(b.place); // "10. Hazar..." -> 10 olur
+                    return numA - numB; // Küçükten büyüğe sıralar
+                });
+                // -----------------------------------------------------
+
+                // Kart Kutusu
+                const card = document.createElement('div');
+                card.className = 'student-card';
+
+                // Başlık
+                const title = document.createElement('h3');
+                title.className = 'student-title';
+                title.innerHTML = `👤 ${studentName} <span style="font-size:12px; color:#777; font-weight:normal; margin-left:10px;">(${comments.length} yorum)</span>`;
+                
+                // Mini Tablo Başlığı
+                const table = document.createElement('table');
+                table.className = 'student-table';
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th style="width:25%">Mekan</th>
+                            <th style="width:45%">Yorum</th>
+                            <th style="width:20%">Tarih</th>
+                            <th style="width:10%">İşlem</th>
+                        </tr>
+                    </thead>
+                `;
+
+                // Tablo Gövdesi
+                const tbody = document.createElement('tbody');
+                
+                comments.forEach(comment => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="color:#e67e22; font-weight:bold;">${comment.place}</td>
+                        <td style="font-style:italic;">"${comment.comment}"</td>
+                        <td style="color:#999; font-size:11px;">${comment.date}</td>
+                        <td style="text-align:center;">
+                            <button onclick="deleteCommentDB(${comment.id})" style="background:#c0392b; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer;">Sil</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                table.appendChild(tbody);
+                card.appendChild(title);
+                card.appendChild(table);
+                
+                // Kartı ana konteynera ekle
+                container.appendChild(card);
+            });
+        })
+        .catch(err => console.error(err));
+}
+
+window.deleteCommentDB = (id) => {
+    if(confirm("Yorumu silmek istiyor musunuz?")) {
+        fetch(`/api/comments/${id}`, { method: 'DELETE' })
+            .then(() => loadAdminComments());
+    }
+};
+
+// --- ÖĞRENCİ GİRİŞ SİSTEMİ ---
+
+const studentBtn = document.getElementById('ogrenci-giris');
+const studentModal = document.getElementById('student-login-modal');
+const studentNameInput = document.getElementById('student-name-input');
+const studentSubmitBtn = document.getElementById('student-login-submit');
+const closeStudentBtn = document.querySelector('.close-student-btn');
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedName = localStorage.getItem('student_name');
+    if (savedName) {
+        studentLoggedInUI(savedName);
+    }
+});
+
+if (studentBtn) {
+    studentBtn.onclick = () => {
+        const savedName = localStorage.getItem('student_name');
+        if (savedName) {
+            if(confirm(`Şu an "${savedName}" olarak giriş yaptınız. Çıkış yapmak ister misiniz?`)){
+                localStorage.removeItem('student_name');
+                location.reload(); 
+            }
+        } else {
+            studentModal.style.display = "flex";
+            if(studentNameInput) studentNameInput.focus();
+        }
+    };
+}
+
+if(studentSubmitBtn){
+    studentSubmitBtn.onclick = () => {
+        const name = studentNameInput.value.trim();
+        if (name.length > 2) {
+            // 1. İSMİ KAYDET VE PENCEREYİ KAPAT
+            localStorage.setItem('student_name', name); 
+            studentModal.style.display = "none";
+            studentLoggedInUI(name);
+
+            // --- [YENİ EKLENEN KISIM] --- 
+            // Giriş yapıldığı an, eğer arkada bir mekan penceresi açıksa
+            // onu anında güncelle (Yenilemeye gerek kalmadan).
+            
+            const commentSection = document.getElementById('comment-section');
+            const warningSection = document.getElementById('login-warning-section');
+            const hiddenNameInput = document.getElementById('hidden_user_name');
+            const commenterDisplay = document.getElementById('commenter-display');
+
+            // Eğer bu elemanlar sayfada varsa (ki modal açıksa vardır)
+            if (commentSection && warningSection) {
+                warningSection.style.display = 'none';   // Uyarıyı gizle
+                commentSection.style.display = 'block';  // Formu aç
+                
+                // Formun içine ismi yerleştir ki gönderince doğru gitsin
+                hiddenNameInput.value = name;            
+                commenterDisplay.textContent = name;     
+            }
+            // -----------------------------
+        } 
+    };
+}
+
+if(studentNameInput){
+    studentNameInput.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") studentSubmitBtn.click();
+    });
+}
+
+function studentLoggedInUI(name) {
+    if(studentBtn) {
+        studentBtn.textContent = `👤 ${name}`; 
+        studentBtn.classList.add('logged-in');
+        
+        // DÜZELTME: İsmin üzerine gelince tam halini göster (Tooltip)
+        studentBtn.title = name;
+    }
+}
+
+// --- TÜM KAPATMA İŞLEMLERİ (BİRLEŞTİRİLMİŞ) ---
+
+document.querySelector('.close-btn').onclick = () => { modal.style.display = "none"; }
+document.querySelector('.close-login-btn').onclick = () => { loginModal.style.display = "none"; }
+document.querySelector('.close-dashboard-btn').onclick = () => { dashboardModal.style.display = "none"; }
+if(closeStudentBtn) closeStudentBtn.onclick = () => { studentModal.style.display = "none"; }
+
+// DÜZELTME: Tüm window.onclick olayları tek fonksiyonda toplandı
+window.onclick = (event) => {
+    if (event.target == modal) modal.style.display = "none";
+    if (event.target == loginModal) loginModal.style.display = "none";
+    if (event.target == dashboardModal) dashboardModal.style.display = "none";
+    if (event.target == studentModal) studentModal.style.display = "none";
 }
