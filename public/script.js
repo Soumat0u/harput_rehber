@@ -608,12 +608,18 @@ window.onclick = (event) => {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-    // 'tutorial-id' kısmını kendi pencerenizin ID'si ile değiştirin
-    const tutorialPenceresi = document.getElementById("tutorial-modal");
-    
-    // Pencereyi görünür yap (CSS'te display: none ise block yapıyoruz)
-    if (tutorialPenceresi) {
-        tutorialPenceresi.style.display = "flex"; 
-        // Veya bir class ekliyorsanız: tutorialPenceresi.classList.add("aktif");
+    // 1. Kullanıcı daha önce bu rehberi gördü mü kontrol et
+    const rehberGorulduMu = localStorage.getItem("rehberTamamlandi");
+
+    // 2. Eğer görmediyse pencereyi aç
+    if (!rehberGorulduMu) {
+        const tutorialPenceresi = document.getElementById("tutorial-penceresi");
+        
+        if (tutorialPenceresi) {
+            tutorialPenceresi.style.display = "block"; // Pencereyi aç
+            
+            // 3. Tarayıcıya not düş: "Bu kişi rehberi gördü"
+            localStorage.setItem("rehberTamamlandi", "evet");
+        }
     }
 });
