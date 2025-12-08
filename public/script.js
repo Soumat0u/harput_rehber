@@ -607,18 +607,21 @@ window.onclick = (event) => {
     if (event.target == tutorialModal) tutorialModal.style.display = "none";
 }
 
+// --- SİTE İLK AÇILDIĞINDA REHBER PENCERESİNİ GÖSTER ---
 document.addEventListener("DOMContentLoaded", function() {
-    // 1. Kullanıcı daha önce bu rehberi gördü mü kontrol et
+    // 1. Kullanıcı daha önce bu rehberi gördü mü kontrol et (LocalStorage)
     const rehberGorulduMu = localStorage.getItem("rehberTamamlandi");
 
-    // 2. Eğer görmediyse pencereyi aç
+    // 2. Eğer kullanıcı daha önce görmediyse (ilk girişi ise)
     if (!rehberGorulduMu) {
         const tutorialPenceresi = document.getElementById("tutorial-modal");
         
         if (tutorialPenceresi) {
-            tutorialPenceresi.style.display = "block"; // Pencereyi aç
+            // ÖNEMLİ: CSS'de ortalama (center) ayarları flex üzerinde olduğu için
+            // burayı 'block' değil 'flex' yapıyoruz.
+            tutorialPenceresi.style.display = "flex"; 
             
-            // 3. Tarayıcıya not düş: "Bu kişi rehberi gördü"
+            // 3. Tarayıcıya not düş: "Bu kişi rehberi gördü, bir daha açma"
             localStorage.setItem("rehberTamamlandi", "evet");
         }
     }
