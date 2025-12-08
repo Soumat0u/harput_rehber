@@ -609,20 +609,13 @@ window.onclick = (event) => {
 
 // --- SİTE İLK AÇILDIĞINDA REHBER PENCERESİNİ GÖSTER ---
 document.addEventListener("DOMContentLoaded", function() {
-    // 1. Kullanıcı daha önce bu rehberi gördü mü kontrol et (LocalStorage)
-    const rehberGorulduMu = localStorage.getItem("rehberTamamlandi");
-
-    // 2. Eğer kullanıcı daha önce görmediyse (ilk girişi ise)
-    if (!rehberGorulduMu) {
-        const tutorialPenceresi = document.getElementById("tutorial-modal");
-        
-        if (tutorialPenceresi) {
-            // ÖNEMLİ: CSS'de ortalama (center) ayarları flex üzerinde olduğu için
-            // burayı 'block' değil 'flex' yapıyoruz.
-            tutorialPenceresi.style.display = "flex"; 
-            
-            // 3. Tarayıcıya not düş: "Bu kişi rehberi gördü, bir daha açma"
-            localStorage.setItem("rehberTamamlandi", "evet");
-        }
+    // 'tutorial-id' kısmını kendi pencerenizin ID'si ile değiştirin
+    const tutorialPenceresi = document.getElementById("tutorial-modal");
+    
+    // Pencereyi görünür yap (CSS'te display: none ise block yapıyoruz)
+    if (tutorialPenceresi) {
+        tutorialPenceresi.style.display = "flex"; 
+        // Veya bir class ekliyorsanız: tutorialPenceresi.classList.add("aktif");
     }
 });
+
