@@ -606,3 +606,20 @@ window.onclick = (event) => {
     // YENİ EKLENEN SATIR:
     if (event.target == tutorialModal) tutorialModal.style.display = "none";
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. Kullanıcı daha önce bu rehberi gördü mü kontrol et
+    const rehberGorulduMu = localStorage.getItem("rehberTamamlandi");
+
+    // 2. Eğer görmediyse pencereyi aç
+    if (!rehberGorulduMu) {
+        const tutorialPenceresi = document.getElementById("tutorial-modal");
+        
+        if (tutorialPenceresi) {
+            tutorialPenceresi.style.display = "block"; // Pencereyi aç
+            
+            // 3. Tarayıcıya not düş: "Bu kişi rehberi gördü"
+            localStorage.setItem("rehberTamamlandi", "evet");
+        }
+    }
+});
