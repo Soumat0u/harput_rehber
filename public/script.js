@@ -613,7 +613,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // 2. Eğer görmediyse pencereyi aç
     if (!rehberGorulduMu) {
-        const tutorialPenceresi = document.getElementById("tutorial-penceresi");
+        const tutorialPenceresi = document.getElementById("tutorial-modal");
         
         if (tutorialPenceresi) {
             tutorialPenceresi.style.display = "block"; // Pencereyi aç
