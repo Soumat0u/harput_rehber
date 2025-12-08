@@ -123,6 +123,35 @@ p {
     vertical-align: middle;    /* Hizalamayı düzeltir */
 }
 
+
+#tutorial-modal {
+    /* 1. Ekrana sabitle */
+    position: fixed; 
+    
+    /* 2. Sol üst köşesini ekranın tam ortasına getir */
+    top: 50%;
+    left: 50%;
+    
+    /* 3. Kutunun kendi genişliğinin ve yüksekliğinin yarısı kadar geri çek */
+    /* (Bu, "tam ortalama" işleminin sihirli kodudur) */
+    transform: translate(-50%, -50%);
+    
+    /* 4. Diğer her şeyin (harita, resimler vb.) üstünde görünsün */
+    z-index: 9999; 
+    
+    /* İsteğe bağlı görsellik ayarları */
+    background-color: white; /* Arka plan rengi */
+    padding: 20px;           /* İç boşluk */
+    border-radius: 10px;     /* Köşeleri yuvarlat */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3); /* Gölge ver ki havada dursun */
+    width: 300px;            /* Genişlik (İstediğiniz boyutu verin) */
+    text-align: center;      /* Yazıları ortala */
+    
+    /* Başlangıçta gizli olsun (JS ile açacağız) */
+    display: none;
+}
+
+
 #tutorial-button {
     width: 10%;
     padding: 10px 10px
