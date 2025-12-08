@@ -375,9 +375,18 @@ if (ogretmenBtn) {
 
 // DÜZELTME: ID Eşleşmesi sağlandı (HTML'de tutorial-button idi)
 const tutorialBtn = document.getElementById('tutorial-button');
-if (tutorialBtn) {
+const tutorialModal = document.getElementById('tutorial-modal');
+const closeTutorialBtn = document.querySelector('.close-tutorial-btn');if (tutorialBtn) {
     tutorialBtn.onclick = () => {
-        alert("Haritadaki kırmızı noktalara tıklayarak mekanları keşfedebilir, sol menüden hızlı geçiş yapabilirsiniz. Öğretmenler giriş yaparak yorumları yönetebilir.");
+        // Alert yerine artık pencereyi açıyoruz
+        tutorialModal.style.display = "flex";
+    };
+}
+
+// Çarpı (X) butonuna basınca kapat
+if (closeTutorialBtn) {
+    closeTutorialBtn.onclick = () => {
+        tutorialModal.style.display = "none";
     };
 }
 
@@ -587,10 +596,13 @@ document.querySelector('.close-login-btn').onclick = () => { loginModal.style.di
 document.querySelector('.close-dashboard-btn').onclick = () => { dashboardModal.style.display = "none"; }
 if(closeStudentBtn) closeStudentBtn.onclick = () => { studentModal.style.display = "none"; }
 
-// DÜZELTME: Tüm window.onclick olayları tek fonksiyonda toplandı
+// --- TÜM PENCERELER İÇİN DIŞARI TIKLAMA KONTROLÜ ---
 window.onclick = (event) => {
     if (event.target == modal) modal.style.display = "none";
     if (event.target == loginModal) loginModal.style.display = "none";
     if (event.target == dashboardModal) dashboardModal.style.display = "none";
     if (event.target == studentModal) studentModal.style.display = "none";
+    
+    // YENİ EKLENEN SATIR:
+    if (event.target == tutorialModal) tutorialModal.style.display = "none";
 }
