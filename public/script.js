@@ -616,7 +616,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const tutorialPenceresi = document.getElementById("tutorial-modal");
         
         if (tutorialPenceresi) {
-            tutorialPenceresi.style.display = "block"; // Pencereyi aç
+            tutorialPenceresi.style.display = "flex"; // Pencereyi aç
             
             // 3. Tarayıcıya not düş: "Bu kişi rehberi gördü"
             localStorage.setItem("rehberTamamlandi", "evet");
