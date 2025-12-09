@@ -112,16 +112,34 @@
           <span class="close-dashboard-btn">&times;</span>
           
           <div class="dashboard-header">
-              <h2>Öğrenci Seyahatnameleri (Öğretmen Paneli)</h2>
-              <div class="refresh-info">Veriler öğrenci ismine göre gruplanmıştır.</div>
+              <h2 id="dashboard-title">Öğrenci Listesi</h2>
+              <button id="back-to-students-btn" style="display: none;" class="back-btn">❮ Öğrenci Listesine Dön</button>
           </div>
 
-          <div id="grouped-comments-container" class="grouped-container">
-              </div>
+          <div id="student-list-view" class="view-container">
+              <div id="student-grid" class="student-grid">
+                  </div>
+              <p id="no-data-msg" style="display:none; text-align:center; color:#777; margin-top:20px;">
+                  Henüz hiç yorum yapılmamış.
+              </p>
+          </div>
 
-          <p id="no-comments-msg" style="display:none; text-align:center; color:#777; margin-top:20px;">
-              Henüz hiç yorum yapılmamış.
-          </p>
+          <div id="student-detail-view" class="view-container" style="display: none;">
+              <div class="table-wrapper">
+                  <table id="comments-table" class="admin-table">
+                      <thead>
+                          <tr>
+                              <th style="width: 25%;">Mekan</th>
+                              <th style="width: 60%;">Öğrenci Yorumu</th>
+                              <th style="width: 15%;">İşlem</th>
+                          </tr>
+                      </thead>
+                      <tbody id="detail-tbody">
+                          </tbody>
+                  </table>
+              </div>
+          </div>
+
       </div>
     </div>
 

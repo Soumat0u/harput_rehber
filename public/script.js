@@ -56,17 +56,7 @@ const places = [
                 sırasında beyinin askeriyle tamamı 1.200 silahlı asker olur. 300 payesiyle kazadır. Tamamı (---) adet nahiye \
                 köyleri vardır. Bu nahiyelerden kadıya senede alh kese hasıl olur. Sancakbeyine sancağında 20 kaza yerden 18.000 \
                 guruş hasıl olur. Müftüsü, nakibüleşrafı, sipah kethüdayeri, yeniçeri serdarı, şehir subaşısı ve muhtesibi vardır. ",
-        images: [
-            "images/2- HARPUT KALESİ/5-bin-yillik-harput-kalesi-nde_1692527402_WDidph-12.webp",
-            "images/2- HARPUT KALESİ/2025-06-14-at-1741059055.webp",
-            "images/2- HARPUT KALESİ/2025-06-14-at-1741059055.webp",
-            "images/2- HARPUT KALESİ/ARAZİ-FOTO-1-4-scaled.jpg",
-            "images/2- HARPUT KALESİ/Harput_kalesi-Harput-Elazığ_-_panoramio.jpg",
-            "images/2- HARPUT KALESİ/Harput-fortress.jpg",
-            "images/2- HARPUT KALESİ/images (1).jpg",
-            "images/2- HARPUT KALESİ/images.jpg",
-        ]
-
+        
     },
     {
         id:3,
@@ -412,18 +402,37 @@ function attemptLogin() {
     }
 }
 
-// --- script.js İÇİNE EKLENECEK / GÜNCELLENECEK KISIM ---
+/* --- YENİ GELİŞMİŞ ÖĞRETMEN PANELİ MANTIĞI --- */
+
+// Global değişken: Tüm yorumları hafızada tutmak için
+let allCommentsCache = [];
 
 function loadAdminComments() {
-    const container = document.getElementById('grouped-comments-container');
-    const noMsg = document.getElementById('no-comments-msg');
-    
-    container.innerHTML = '<p style="text-align:center;">Yükleniyor...</p>';
+    // 1. Paneli Temizle ve Hazırla
+    const studentGridView = document.getElementById('student-list-view');
+    const detailView = document.getElementById('student-detail-view');
+    const backBtn = document.getElementById('back-to-students-btn');
+    const dashboardTitle = document.getElementById('dashboard-title');
+    const studentGrid = document.getElementById('student-grid');
+    const noDataMsg = document.getElementById('no-data-msg');
 
-    fetch('/api/comments')
-        .then(response => response.json())
+    // Başlangıç görünümüne sıfırla
+    studentGridView.style.display = 'block';
+    detailView.style.display = 'none';
+    backBtn.style.display = 'none';
+    dashboardTitle.textContent = "Öğrenci Listesi";
+    studentGrid.innerHTML = '<div style="text-align:center; width:100%;">Yükleniyor...</div>';
+
+    // 2. Sunucudan Verileri Çek (Burayı kendi API yoluna göre düzenle)
+    // Eğer backend yoksa test için boş veri dönebilir.
+    fetch('/api/all-comments') 
+        .then(response => {
+            if (!response.ok) throw new Error('Veri çekilemedi');
+            return response.json();
+        })
         .then(data => {
             console.log("Sunucudan gelen veri:", data);
+<<<<<<< HEAD
             container.innerHTML = ''; // Yükleniyor yazısını temizle
 
             if (!data || data.length === 0) {
@@ -510,40 +519,133 @@ function loadAdminComments() {
                 container.appendChild(groupCard);
             });
 
+=======
+            allCommentsCache = data; // Veriyi kaydet
+            renderStudentGrid(data);
+>>>>>>> 19404b0 (baştan tasarım)
         })
         .catch(err => {
             console.error(err);
-            container.innerHTML = '<p style="color:red; text-align:center;">Veriler yüklenirken hata oluştu.</p>';
+            studentGrid.innerHTML = '<div style="color:red; text-align:center;">Veriler yüklenirken hata oluştu.</div>';
         });
 }
 
-// Yardımcı Fonksiyon: HTML Injection koruması
-function escapeHtml(text) {
-    if (!text) return "";
-    return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
+// Verileri Öğrenci İsmine Göre Gruplayıp Ekrana Basan Fonksiyon
+function renderStudentGrid(comments) {
+    const studentGrid = document.getElementById('student-grid');
+    const noDataMsg = document.getElementById('no-data-msg');
+    
+    studentGrid.innerHTML = ''; // Temizle
 
-// Yardımcı Fonksiyon: Tarih formatı (Veritabanından gelen tarih string ise)
-function formatDate(dateString) {
-    if(!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute:'2-digit' });
-}
-
-
-
-
-window.deleteCommentDB = (id) => {
-    if(confirm("Yorumu silmek istiyor musunuz?")) {
-        fetch(`/api/comments/${id}`, { method: 'DELETE' })
-            .then(() => loadAdminComments());
+    if (!comments || comments.length === 0) {
+        noDataMsg.style.display = 'block';
+        return;
     }
-};
+    noDataMsg.style.display = 'none';
+
+    // A. Veriyi Grupla: { "Ahmet Yılmaz": [yorum1, yorum2], "Ayşe": [...] }
+    const groupedData = {};
+    comments.forEach(comment => {
+        // İsim yoksa 'Bilinmeyen' yaz
+        const name = comment.user_name || "İsimsiz Öğrenci";
+        if (!groupedData[name]) {
+            groupedData[name] = [];
+        }
+        groupedData[name].push(comment);
+    });
+
+    // B. Her Öğrenci İçin Bir Kutu Oluştur
+    Object.keys(groupedData).forEach(studentName => {
+        const studentComments = groupedData[studentName];
+        
+        const card = document.createElement('div');
+        card.className = 'student-box';
+        card.innerHTML = `
+            <div style="font-size: 30px;">🎓</div>
+            <h3>${studentName}</h3>
+            <span class="comment-count-badge">${studentComments.length} Yorum</span>
+        `;
+
+        // Karta tıklayınca detay görünümünü aç
+        card.onclick = () => openStudentDetail(studentName, studentComments);
+
+        studentGrid.appendChild(card);
+    });
+}
+
+// Bir Öğrencinin Tüm Yorumlarını Gösteren Fonksiyon
+function openStudentDetail(studentName, comments) {
+    const studentGridView = document.getElementById('student-list-view');
+    const detailView = document.getElementById('student-detail-view');
+    const backBtn = document.getElementById('back-to-students-btn');
+    const dashboardTitle = document.getElementById('dashboard-title');
+    const tbody = document.getElementById('detail-tbody');
+
+    // 1. Görünümü Değiştir
+    studentGridView.style.display = 'none';
+    detailView.style.display = 'block';
+    backBtn.style.display = 'inline-block';
+    dashboardTitle.textContent = `${studentName} - Seyahatnamesi`;
+
+    // 2. Yorumları Mekan Numarasına Göre Sırala (Doğal Sıralama: 1, 2, 10...)
+    comments.sort((a, b) => {
+        // Mekan adından sayıyı çek: "1. Aşvan" -> 1
+        const numA = parseInt(a.place_name.match(/^\d+/)) || 0;
+        const numB = parseInt(b.place_name.match(/^\d+/)) || 0;
+        return numA - numB;
+    });
+
+    // 3. Tabloyu Doldur
+    tbody.innerHTML = '';
+    comments.forEach(comment => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="font-weight:bold; color:#e67e22;">${comment.place_name}</td>
+            <td>${comment.user_comment}</td> <td>
+                <button class="delete-btn" onclick="deleteComment('${comment.id || comment._id}', this)">🗑️ Sil</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // 4. Geri Dön Butonu Olayı
+    backBtn.onclick = () => {
+        studentGridView.style.display = 'block';
+        detailView.style.display = 'none';
+        backBtn.style.display = 'none';
+        dashboardTitle.textContent = "Öğrenci Listesi";
+    };
+}
+
+// Yorum Silme Fonksiyonu
+function deleteComment(commentId, btnElement) {
+    if(!confirm("Bu yorumu silmek istediğinize emin misiniz?")) return;
+
+    // API'ye silme isteği gönder
+    fetch('/api/delete-comment', {
+        method: 'POST', // veya 'DELETE'
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: commentId })
+    })
+    .then(res => {
+        if(res.ok) {
+            // Tablodan satırı kaldır
+            const row = btnElement.closest('tr');
+            row.style.background = '#ffcccc';
+            setTimeout(() => row.remove(), 500);
+        } else {
+            alert("Silme işlemi başarısız oldu.");
+        }
+    })
+    .catch(err => {
+        console.error("Silme hatası:", err);
+        // Backend olmadığı durumda UI testi için satırı silelim:
+        // btnElement.closest('tr').remove(); 
+        alert("Sunucu bağlantı hatası.");
+    });
+}
 
 // --- ÖĞRENCİ GİRİŞ SİSTEMİ ---
 
