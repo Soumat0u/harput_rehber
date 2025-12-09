@@ -432,7 +432,7 @@ function loadAdminComments() {
         })
         .then(data => {
             console.log("Sunucudan gelen veri:", data);
-<<<<<<< HEAD
+
             container.innerHTML = ''; // Yükleniyor yazısını temizle
 
             if (!data || data.length === 0) {
@@ -519,10 +519,9 @@ function loadAdminComments() {
                 container.appendChild(groupCard);
             });
 
-=======
             allCommentsCache = data; // Veriyi kaydet
             renderStudentGrid(data);
->>>>>>> 19404b0 (baştan tasarım)
+            
         })
         .catch(err => {
             console.error(err);
