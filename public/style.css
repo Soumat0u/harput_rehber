@@ -525,32 +525,50 @@ button[type="submit"]:hover { background: #e67e22; }
 
 /* --- YORUM KATLAMA STİLLERİ --- */
 
-/* Yorumun kutusu: Varsayılan olarak kısıtlı yükseklik */
 .comment-wrapper {
     display: -webkit-box;
-    -webkit-line-clamp: 2;      /* En fazla 2 satır göster */
+    -webkit-line-clamp: 2;      /* Kapalıyken 2 satır */
     -webkit-box-orient: vertical;
-    overflow: hidden;           /* Taşan kısmı gizle */
-    text-overflow: ellipsis;    /* Sonuna ... koy */
-    line-height: 1.4;           /* Satır yüksekliği */
-    max-height: 3em;            /* Yaklaşık 2 satır yüksekliği */
-    cursor: pointer;            /* Tıklanabilir olduğunu göster */
-    transition: all 0.3s ease;  /* Yumuşak geçiş efekti */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.5;
+    max-height: 3em;            /* 2 satır yüksekliği kadar */
+    cursor: pointer;
+    transition: max-height 0.4s ease, color 0.2s ease; /* Yumuşak geçiş */
     position: relative;
+    padding-right: 20px; /* Ok işareti için yer */
 }
 
-/* Yorumun üzerine gelince ipucu (isteğe bağlı) */
+/* Yorumun yanına küçük bir ok işareti ekleyelim */
+.comment-wrapper::after {
+    content: '▼';
+    font-size: 10px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    color: #e67e22;
+    transition: transform 0.3s;
+}
+
 .comment-wrapper:hover {
-    color: #e67e22; /* Turuncu renk ile belirginleştir */
+    color: #333;
+    background-color: #fcfcfc;
 }
 
-/* Tıklandığında eklenecek sınıf: Kilidi açar */
+/* Tıklandığında (Expanded) Hali */
 .comment-wrapper.expanded {
-    -webkit-line-clamp: unset;  /* Sınırı kaldır */
+    -webkit-line-clamp: unset; 
+    display: block;            /* Flex box'tan bloğa dön */
+    max-height: 1000px;        /* Yeterince büyük bir değer vererek animasyonu sağla */
     overflow: visible;
-    max-height: none;           /* Yüksekliği serbest bırak */
-    cursor: text;               /* İmleci normale çevir */
-    color: #333;                /* Rengi normale çevir */
+    color: #000;
+    background: transparent;
+    cursor: zoom-out;          /* Kapatmak için tıkla imleci */
+}
+
+.comment-wrapper.expanded::after {
+    transform: rotate(180deg); /* Oku ters çevir */
+    content: '▲';
 }
 
 /* -- MOBİL UYUMLULUK (RESPONSIVE) -- */
@@ -670,6 +688,63 @@ button[type="submit"]:hover { background: #e67e22; }
     .sidebar.closed {
     width: 20px;
     padding: 25px 0;
+    }
+
+
+    /* Tablo başlıklarını (Thead) gizle */
+    .student-table thead {
+        display: none;
+    }
+
+    /* Tabloyu, satırları ve hücreleri blok elemente çevir */
+    .student-table, .student-table tbody, .student-table tr, .student-table td {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Her satırı bir "Kart" gibi göster */
+    .student-table tr {
+        margin-bottom: 15px;
+        background: #fdfdfd;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        position: relative; /* Sil butonu için */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Hücrelerin iç boşluklarını ayarla */
+    .student-table td {
+        padding: 5px 0;
+        text-align: left;
+        border-bottom: none; /* Varsayılan çizgiyi kaldır */
+    }
+
+    /* 1. Hücre (Mekan Adı) */
+    .student-table td:nth-of-type(1) {
+        font-size: 15px;
+        color: #e67e22 !important;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+    }
+
+    /* 3. Hücre (Tarih) - Yorumun altına alalım */
+    .student-table td:nth-of-type(3) {
+        font-size: 11px;
+        color: #999;
+        text-align: right;
+        margin-top: 10px;
+    }
+
+    /* 4. Hücre (Sil Butonu) - Sağ üst köşeye sabitleyelim */
+    .student-table td:nth-of-type(4) {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: auto;
+        padding: 0;
     }
     
 }

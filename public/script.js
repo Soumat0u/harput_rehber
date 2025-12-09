@@ -420,7 +420,6 @@ function loadAdminComments() {
             const container = document.getElementById('grouped-comments-container');
             const noCommentsMsg = document.getElementById('no-comments-msg');
             
-            // Önce temizle
             container.innerHTML = "";
 
             if (data.length === 0) {
@@ -430,7 +429,7 @@ function loadAdminComments() {
             
             if(noCommentsMsg) noCommentsMsg.style.display = 'none';
 
-            // --- 1. VERİLERİ İSME GÖRE GRUPLA ---
+            // 1. VERİLERİ İSME GÖRE GRUPLA
             const groupedData = {};
             
             data.forEach(item => {
@@ -440,19 +439,16 @@ function loadAdminComments() {
                 groupedData[item.name].push(item);
             });
 
-            // --- 2. HER GRUP İÇİN KART OLUŞTUR ---
+            // 2. HER GRUP İÇİN KART OLUŞTUR
             Object.keys(groupedData).forEach(studentName => {
                 const comments = groupedData[studentName];
 
-                // --- [YENİ EKLENEN] MEKAN NUMARASINA GÖRE SIRALAMA ---
-                // Mekan isimleri "1. Aşvan", "10. Hazar" gibi olduğu için
-                // parseInt ile baştaki sayıyı alıp ona göre kıyaslıyoruz.
+                // Mekan numarasına göre sırala
                 comments.sort((a, b) => {
-                    const numA = parseInt(a.place); // "1. Aşvan..." -> 1 olur
-                    const numB = parseInt(b.place); // "10. Hazar..." -> 10 olur
-                    return numA - numB; // Küçükten büyüğe sıralar
+                    const numA = parseInt(a.place); 
+                    const numB = parseInt(b.place); 
+                    return numA - numB;
                 });
-                // -----------------------------------------------------
 
                 // Kart Kutusu
                 const card = document.createElement('div');
@@ -463,36 +459,38 @@ function loadAdminComments() {
                 title.className = 'student-title';
                 title.innerHTML = `👤 ${studentName} <span style="font-size:12px; color:#777; font-weight:normal; margin-left:10px;">(${comments.length} yorum)</span>`;
                 
-                // Mini Tablo Başlığı
+                // Tablo Başlığı (Inline width kaldırıldı, CSS yönetecek)
                 const table = document.createElement('table');
                 table.className = 'student-table';
                 table.innerHTML = `
                     <thead>
                         <tr>
-                            <th style="width:15%">Mekan</th>
-                            <th style="width:35%">Yorum</th>
-                            <th style="width:15%">Tarih</th>
-                            <th style="width:10%">İşlem</th>
+                            <th>Mekan</th>
+                            <th>Yorum</th>
+                            <th>Tarih</th>
+                            <th>İşlem</th>
                         </tr>
                     </thead>
                 `;
 
-                // Tablo Gövdesi
                 const tbody = document.createElement('tbody');
                 
                 comments.forEach(comment => {
                     const tr = document.createElement('tr');
+                    // Hücrelere 'data-label' ekleyebiliriz ama şu anki tasarımda gerek yok.
                     tr.innerHTML = `
-                        <td style="color:#e67e22; font-weight:bold; vertical-align: top;">${comment.place}</td>
+                        <td class="place-cell" style="font-weight:bold; color:#e67e22;">${comment.place}</td>
                         
-                        <td style="vertical-align: top;">
-                            <div class="comment-wrapper" onclick="this.classList.toggle('expanded')" title="Tamamını görmek için tıklayın">
-                                "${comment.comment}"
+                        <td class="comment-cell">
+                            <div class="comment-wrapper" onclick="this.classList.toggle('expanded')" title="Okumak için tıkla">
+                                ${comment.comment}
                             </div>
                         </td>
-                        <td style="color:#999; font-size:11px; vertical-align: top;">${comment.date}</td>
-                        <td style="text-align:center; vertical-align: top;">
-                            <button onclick="deleteCommentDB(${comment.id})" style="background:#c0392b; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer;">Sil</button>
+                        
+                        <td class="date-cell">${comment.date}</td>
+                        
+                        <td class="action-cell">
+                            <button onclick="deleteCommentDB(${comment.id})" style="background:#c0392b; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:12px;">Sil</button>
                         </td>
                     `;
                     tbody.appendChild(tr);
@@ -501,8 +499,6 @@ function loadAdminComments() {
                 table.appendChild(tbody);
                 card.appendChild(title);
                 card.appendChild(table);
-                
-                // Kartı ana konteynera ekle
                 container.appendChild(card);
             });
         })
