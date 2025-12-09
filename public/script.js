@@ -3,7 +3,7 @@ var map = L.map('map', { zoomControl: false }).setView([38.680, 39.550], 10);
 
 L.control.zoom({ position: 'topright' }).addTo(map);
 
-L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
     maxZoom: 20,
     subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
 }).addTo(map);
@@ -521,12 +521,80 @@ function loadAdminComments() {
 
             allCommentsCache = data; // Veriyi kaydet
             renderStudentGrid(data);
-            
+
         })
         .catch(err => {
-            console.error(err);
-            studentGrid.innerHTML = '<div style="color:red; text-align:center;">Veriler yüklenirken hata oluştu.</div>';
+            console.warn("Sunucu hatası veya Backend yok. TEST VERİSİ yükleniyor...", err);
+            
+            // --- TEST VERİSİ (Backend olmadan paneli görmek için) ---
+            const testData = [
+                { id: 1, user_name: "Ahmet Yılmaz", place_name: "1. Aşvan (Muratçık) Köyü", comment: "Burası çok güzeldi, tarihi hissettim.", created_at: "2023-12-09T10:00:00" },
+                { id: 2, user_name: "Ayşe Demir", place_name: "2. Harput Kalesi (Süt Kalesi)", comment: "Manzara harika ama rüzgarlı.", created_at: "2023-12-09T11:30:00" },
+                { id: 3, user_name: "Ahmet Yılmaz", place_name: "3. Ulu Cami", comment: "Minaresi gerçekten eğriymiş.", created_at: "2023-12-09T12:00:00" }
+            ];
+            
+            // Test verisini işle (Aşağıdaki yardımcı fonksiyonu kullanacağız)
+            processComments(testData);
         });
+
+        
+}
+
+// Veriyi işleyen mantığı ayrı bir fonksiyona alarak kod tekrarını önledik
+function processComments(data) {
+    const container = document.getElementById('student-grid'); // Container tanımlandı
+    const noMsg = document.getElementById('no-data-msg');      // Mesaj alanı tanımlandı
+    
+    container.innerHTML = ''; 
+
+    if (!data || data.length === 0) {
+        if(noMsg) noMsg.style.display = 'block';
+        return;
+    }
+    if(noMsg) noMsg.style.display = 'none';
+
+    // 1. ADIM: Yorumları Öğrenci İsmine Göre Grupla
+    const groupedData = {};
+
+    data.forEach(comment => {
+        if (!groupedData[comment.user_name]) {
+            groupedData[comment.user_name] = [];
+        }
+        
+        const placeInfo = places.find(p => p.name === comment.place_name);
+        const sortId = placeInfo ? placeInfo.id : 999; 
+
+        groupedData[comment.user_name].push({
+            ...comment,
+            sortId: sortId
+        });
+    });
+
+    // 2. ADIM: Ekrana Bas
+    const sortedNames = Object.keys(groupedData).sort((a, b) => a.localeCompare(b, 'tr'));
+
+    sortedNames.forEach(studentName => {
+        const comments = groupedData[studentName];
+        comments.sort((a, b) => a.sortId - b.sortId);
+
+        // KART OLUŞTURMA
+        const groupCard = document.createElement('div');
+        groupCard.className = 'student-box'; // CSS class'ı student-box kullanılmıştı
+        
+        groupCard.innerHTML = `
+            <div style="font-size: 30px;">🎓</div>
+            <h3>${studentName}</h3>
+            <span class="comment-count-badge">${comments.length} Yorum</span>
+        `;
+        
+        // Tıklanınca detayı aç
+        groupCard.onclick = () => openStudentDetail(studentName, comments);
+
+        container.appendChild(groupCard);
+    });
+    
+    // Cache'i güncelle
+    allCommentsCache = data;
 }
 
 // Verileri Öğrenci İsmine Göre Gruplayıp Ekrana Basan Fonksiyon
