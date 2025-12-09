@@ -417,14 +417,15 @@ function loadAdminComments() {
     const noDataMsg = document.getElementById('no-data-msg');
 
     // Başlangıç görünümüne sıfırla
-    studentGridView.style.display = 'block';
-    detailView.style.display = 'none';
-    backBtn.style.display = 'none';
-    dashboardTitle.textContent = "Öğrenci Listesi";
-    studentGrid.innerHTML = '<div style="text-align:center; width:100%;">Yükleniyor...</div>';
+    if(studentGridView) studentGridView.style.display = 'block';
+    if(detailView) detailView.style.display = 'none';
+    if(backBtn) backBtn.style.display = 'none';
+    if(dashboardTitle) dashboardTitle.textContent = "Öğrenci Listesi";
+    
+    // Yükleniyor mesajı
+    if(studentGrid) studentGrid.innerHTML = '<div style="text-align:center; width:100%; padding:20px;">Veriler yükleniyor...</div>';
 
-    // 2. Sunucudan Verileri Çek (Burayı kendi API yoluna göre düzenle)
-    // Eğer backend yoksa test için boş veri dönebilir.
+    // 2. Sunucudan Verileri Çek
     fetch('/api/all-comments') 
         .then(response => {
             if (!response.ok) throw new Error('Veri çekilemedi');
@@ -433,111 +434,24 @@ function loadAdminComments() {
         .then(data => {
             console.log("Sunucudan gelen veri:", data);
 
-            container.innerHTML = ''; // Yükleniyor yazısını temizle
-
-            if (!data || data.length === 0) {
-                noMsg.style.display = 'block';
-                return;
-            }
-            noMsg.style.display = 'none';
-
-            // 1. ADIM: Yorumları Öğrenci İsmine Göre Grupla
-            const groupedData = {};
-
-            data.forEach(comment => {
-                // Eğer bu isimde bir grup yoksa oluştur
-                if (!groupedData[comment.user_name]) {
-                    groupedData[comment.user_name] = [];
-                }
-                
-                // Mekan ID'sini bulmak için "places" dizisini kullanalım
-                // (Yorum verisinde mekan adı var ama ID olmayabilir, eşleştiriyoruz)
-                const placeInfo = places.find(p => p.name === comment.place_name);
-                const sortId = placeInfo ? placeInfo.id : 999; // Bulamazsa sona at
-
-                // Yorum objesine ID'yi ekleyip diziye at
-                groupedData[comment.user_name].push({
-                    ...comment,
-                    sortId: sortId
-                });
-            });
-
-            // 2. ADIM: Grupları ve Grup İçi Yorumları Sırala ve Ekrana Bas
-            
-            // İsimlere göre alfabetik sırala
-            const sortedNames = Object.keys(groupedData).sort((a, b) => a.localeCompare(b, 'tr'));
-
-            sortedNames.forEach(studentName => {
-                const comments = groupedData[studentName];
-
-                // Grup içi sıralama: Mekan ID'sine göre (Küçükten büyüğe)
-                comments.sort((a, b) => a.sortId - b.sortId);
-
-                // --- HTML OLUŞTURMA (Öğrenci Kartı) ---
-                const groupCard = document.createElement('div');
-                groupCard.className = 'student-group-card';
-
-                // Başlık Kısmı
-                const headerHtml = `
-                    <div class="student-group-header">
-                        <h3>👤 ${studentName}</h3>
-                        <span class="comment-count-badge">${comments.length} Mekan</span>
-                    </div>
-                `;
-
-                // Yorumlar Listesi
-                const listUl = document.createElement('ul');
-                listUl.className = 'student-comments-list';
-
-                comments.forEach(comment => {
-                    const li = document.createElement('li');
-                    li.className = 'student-comment-item';
-                    
-                    // ID gösterimi (Örneğin: "1", "2")
-                    const badgeContent = comment.sortId !== 999 ? comment.sortId : '?';
-
-                    li.innerHTML = `
-                        <div class="place-badge" title="Mekan No">${badgeContent}</div>
-                        
-                        <div class="comment-content-area">
-                            <span class="place-name-title">${comment.place_name}</span>
-                            <div class="comment-text-full">${escapeHtml(comment.comment)}</div>
-                            <div style="font-size:11px; color:#999; margin-top:5px;">
-                                ${formatDate(comment.created_at)}
-                            </div>
-                        </div>
-
-                        <button class="delete-comment-btn" onclick="deleteCommentDB(${comment.id})" title="Yorumu Sil">
-                            🗑️
-                        </button>
-                    `;
-                    listUl.appendChild(li);
-                });
-
-                groupCard.innerHTML = headerHtml;
-                groupCard.appendChild(listUl);
-                container.appendChild(groupCard);
-            });
-
-            allCommentsCache = data; // Veriyi kaydet
-            renderStudentGrid(data);
-
+            // --- DÜZELTME BURADA ---
+            // O uzun ve hatalı kod bloğu yerine sadece bu fonksiyonu çağırıyoruz.
+            // Bu fonksiyon veriyi alır, gruplar ve ekrana basar.
+            processComments(data); 
         })
         .catch(err => {
             console.warn("Sunucu hatası veya Backend yok. TEST VERİSİ yükleniyor...", err);
             
-            // --- TEST VERİSİ (Backend olmadan paneli görmek için) ---
+            // --- TEST VERİSİ ---
             const testData = [
                 { id: 1, user_name: "Ahmet Yılmaz", place_name: "1. Aşvan (Muratçık) Köyü", comment: "Burası çok güzeldi, tarihi hissettim.", created_at: "2023-12-09T10:00:00" },
                 { id: 2, user_name: "Ayşe Demir", place_name: "2. Harput Kalesi (Süt Kalesi)", comment: "Manzara harika ama rüzgarlı.", created_at: "2023-12-09T11:30:00" },
                 { id: 3, user_name: "Ahmet Yılmaz", place_name: "3. Ulu Cami", comment: "Minaresi gerçekten eğriymiş.", created_at: "2023-12-09T12:00:00" }
             ];
             
-            // Test verisini işle (Aşağıdaki yardımcı fonksiyonu kullanacağız)
+            // Test verisini işle
             processComments(testData);
         });
-
-        
 }
 
 // Veriyi işleyen mantığı ayrı bir fonksiyona alarak kod tekrarını önledik
