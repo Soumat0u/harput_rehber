@@ -533,14 +533,13 @@ button[type="submit"]:hover { background: #e67e22; }
 /* temel gövde */
 .comment-wrapper {
     display: block;
-    max-height: var(--comment-collapsed-h);
-    overflow: hidden;
-    position: relative;
-    cursor: pointer;
-    transition: max-height 0.35s ease;
-    -webkit-transition: max-height 0.35s ease;
-    padding-right: 10px; /* ok ikonunun taşmaması için boşluk */
+    white-space: normal;     /* tek satır zorlamasını kaldırır */
+    overflow: visible;       /* taşmayı gizleme */
+    max-height: none;        /* sınır kalksın */
+    mask-image: none;        /* fade-out kalksın */
+    -webkit-mask-image: none;
 }
+
 
 /* alttaki fade-out overlay (light/dark uyumlu bir seçenek) */
 .comment-wrapper::after {
