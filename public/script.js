@@ -423,6 +423,7 @@ function loadAdminComments() {
     fetch('/api/comments')
         .then(response => response.json())
         .then(data => {
+            console.log("Sunucudan gelen veri:", data);
             container.innerHTML = ''; // Yükleniyor yazısını temizle
 
             if (!data || data.length === 0) {
