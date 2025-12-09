@@ -14,6 +14,10 @@ p {
     color: #555;    
 }
 
+#baslik_div {
+    align-content: center;
+}
+
 #baslik_1 {
     font-size: 18px;
 }
@@ -193,6 +197,7 @@ p {
 
 /* --- 1. KÜÇÜK GİRİŞ PENCERESİ TASARIMI --- */
 .login-content {
+    max-width: 70% !important; 
     width: 350px !important; /* Küçük Genişlik */
     height: auto !important; /* İçeriğe göre uzasın */
     padding: 40px !important;
@@ -519,6 +524,15 @@ button[type="submit"]:hover { background: #e67e22; }
 
 /* -- MOBİL UYUMLULUK (RESPONSIVE) -- */
 @media (max-width: 768px) {
+    
+    #baslik_1 {
+        font-size: 15px;
+
+    }
+
+    #baslik_2 {
+        font-size: 20px;
+    }
 
     .butonlar {
         padding: 10px 10px;
@@ -588,6 +602,11 @@ button[type="submit"]:hover { background: #e67e22; }
     
     /* Mobil Açık Konum */
     .toggle-btn { left: 330px; } 
+
+    .toggle-btn.closed {
+    left: 20px !important; /* İnce şerit genişliğine git */
+    border-radius: 0 8px 8px 0;
+}
     
     /* Toast Bildirim */
     .toast { width: 90%; top: 20px; }
@@ -616,4 +635,10 @@ button[type="submit"]:hover { background: #e67e22; }
         height: 35px;
         font-size: 16px;
     }
+
+    .sidebar.closed {
+    width: 20px;
+    padding: 25px 0;
+    }
+    
 }
