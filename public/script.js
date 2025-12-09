@@ -469,9 +469,9 @@ function loadAdminComments() {
                 table.innerHTML = `
                     <thead>
                         <tr>
-                            <th style="width:25%">Mekan</th>
-                            <th style="width:45%">Yorum</th>
-                            <th style="width:20%">Tarih</th>
+                            <th style="width:15%">Mekan</th>
+                            <th style="width:35%">Yorum</th>
+                            <th style="width:15%">Tarih</th>
                             <th style="width:10%">İşlem</th>
                         </tr>
                     </thead>
