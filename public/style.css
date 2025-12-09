@@ -152,6 +152,134 @@ p {
 /* -- MENÜ KAPANDIĞINDA BUTONLARI GİZLE -- */
 /* Bu kısım çok önemli, yoksa menü kapandığında butonlar taşar */
 
+/* style.css EN ALTINA EKLE */
+
+/* -- ÖĞRETMEN PANELİ GRUPLAMA STİLLERİ -- */
+.grouped-container {
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 10px; /* Scrollbar payı */
+}
+
+/* Her Öğrenci için Bir Kart */
+.student-group-card {
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-left: 5px solid #e67e22; /* Sol taraf turuncu şerit */
+    border-radius: 8px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+/* Kart Başlığı (Öğrenci Adı) */
+.student-group-header {
+    background: #fdf6e3; /* Hafif krem rengi */
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.student-group-header h3 {
+    margin: 0;
+    color: #d35400;
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+}
+
+.comment-count-badge {
+    background: #e67e22;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Yorum Listesi */
+.student-comments-list {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.student-comment-item {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f1f1f1;
+    display: flex;
+    gap: 15px;
+    transition: background 0.2s;
+}
+
+.student-comment-item:last-child {
+    border-bottom: none;
+}
+
+.student-comment-item:hover {
+    background-color: #fafafa;
+}
+
+/* Mekan Numarası Yuvarlağı */
+.place-badge {
+    min-width: 30px;
+    height: 30px;
+    background: #2c3e50;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* İçerik Alanı */
+.comment-content-area {
+    flex: 1;
+}
+
+.place-name-title {
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 5px;
+    display: block;
+    font-size: 15px;
+}
+
+/* -- KRİTİK KISIM: METİN KAYDIRMA -- */
+.comment-text-full {
+    color: #555;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;      /* Satır sonlarını koru */
+    word-wrap: break-word;      /* Uzun kelimeleri kır */
+    overflow-wrap: break-word;  /* Modern tarayıcılar için */
+}
+
+/* Silme Butonu */
+.delete-comment-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s;
+    align-self: flex-start; /* Üstte dursun */
+}
+
+.delete-comment-btn:hover {
+    background: #c0392b;
+    transform: scale(1.1);
+}
+
 .sidebar.closed .butonlar, 
 .sidebar.closed hr,
 .sidebar.closed div {

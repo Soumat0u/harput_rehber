@@ -373,17 +373,16 @@ if (ogretmenBtn) {
     };
 }
 
-// DÜZELTME: ID Eşleşmesi sağlandı (HTML'de tutorial-button idi)
 const tutorialBtn = document.getElementById('tutorial-button');
 const tutorialModal = document.getElementById('tutorial-modal');
-const closeTutorialBtn = document.querySelector('.close-tutorial-btn');if (tutorialBtn) {
+const closeTutorialBtn = document.querySelector('.close-tutorial-btn');
+
+if (tutorialBtn) {
     tutorialBtn.onclick = () => {
-        // Alert yerine artık pencereyi açıyoruz
         tutorialModal.style.display = "flex";
     };
 }
 
-// Çarpı (X) butonuna basınca kapat
 if (closeTutorialBtn) {
     closeTutorialBtn.onclick = () => {
         tutorialModal.style.display = "none";
@@ -413,137 +412,130 @@ function attemptLogin() {
     }
 }
 
-function loadAdminComments() {
-    fetch('/api/comments')
-        .then(res => res.json())
-        .then(data => {
-            const container = document.getElementById('grouped-comments-container');
-            const noCommentsMsg = document.getElementById('no-comments-msg');
-            
-            container.innerHTML = "";
+// --- script.js İÇİNE EKLENECEK / GÜNCELLENECEK KISIM ---
 
-            if (data.length === 0) {
-                if(noCommentsMsg) noCommentsMsg.style.display = 'block';
+function loadAdminComments() {
+    const container = document.getElementById('grouped-comments-container');
+    const noMsg = document.getElementById('no-comments-msg');
+    
+    container.innerHTML = '<p style="text-align:center;">Yükleniyor...</p>';
+
+    fetch('/api/comments')
+        .then(response => response.json())
+        .then(data => {
+            container.innerHTML = ''; // Yükleniyor yazısını temizle
+
+            if (!data || data.length === 0) {
+                noMsg.style.display = 'block';
                 return;
             }
-            
-            if(noCommentsMsg) noCommentsMsg.style.display = 'none';
+            noMsg.style.display = 'none';
 
-            // 1. VERİLERİ İSME GÖRE GRUPLA
+            // 1. ADIM: Yorumları Öğrenci İsmine Göre Grupla
             const groupedData = {};
-            
-            data.forEach(item => {
-                if (!groupedData[item.name]) {
-                    groupedData[item.name] = [];
+
+            data.forEach(comment => {
+                // Eğer bu isimde bir grup yoksa oluştur
+                if (!groupedData[comment.user_name]) {
+                    groupedData[comment.user_name] = [];
                 }
-                groupedData[item.name].push(item);
+                
+                // Mekan ID'sini bulmak için "places" dizisini kullanalım
+                // (Yorum verisinde mekan adı var ama ID olmayabilir, eşleştiriyoruz)
+                const placeInfo = places.find(p => p.name === comment.place_name);
+                const sortId = placeInfo ? placeInfo.id : 999; // Bulamazsa sona at
+
+                // Yorum objesine ID'yi ekleyip diziye at
+                groupedData[comment.user_name].push({
+                    ...comment,
+                    sortId: sortId
+                });
             });
 
-            // 2. HER GRUP İÇİN KART OLUŞTUR
-            Object.keys(groupedData).forEach(studentName => {
+            // 2. ADIM: Grupları ve Grup İçi Yorumları Sırala ve Ekrana Bas
+            
+            // İsimlere göre alfabetik sırala
+            const sortedNames = Object.keys(groupedData).sort((a, b) => a.localeCompare(b, 'tr'));
+
+            sortedNames.forEach(studentName => {
                 const comments = groupedData[studentName];
 
-                // Mekan numarasına göre sırala
-                comments.sort((a, b) => {
-                    const numA = parseInt(a.place); 
-                    const numB = parseInt(b.place); 
-                    return numA - numB;
-                });
+                // Grup içi sıralama: Mekan ID'sine göre (Küçükten büyüğe)
+                comments.sort((a, b) => a.sortId - b.sortId);
 
-                // Kart Kutusu
-                const card = document.createElement('div');
-                card.className = 'student-card';
+                // --- HTML OLUŞTURMA (Öğrenci Kartı) ---
+                const groupCard = document.createElement('div');
+                groupCard.className = 'student-group-card';
 
-                // Başlık
-                const title = document.createElement('h3');
-                title.className = 'student-title';
-                title.innerHTML = `👤 ${studentName} <span style="font-size:12px; color:#777; font-weight:normal; margin-left:10px;">(${comments.length} yorum)</span>`;
-                
-                // Tablo Başlığı (Inline width kaldırıldı, CSS yönetecek)
-                const table = document.createElement('table');
-                table.className = 'student-table';
-                table.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th>Mekan</th>
-                            <th>Yorum</th>
-                            <th>Tarih</th>
-                            <th>İşlem</th>
-                        </tr>
-                    </thead>
+                // Başlık Kısmı
+                const headerHtml = `
+                    <div class="student-group-header">
+                        <h3>👤 ${studentName}</h3>
+                        <span class="comment-count-badge">${comments.length} Mekan</span>
+                    </div>
                 `;
 
-                const tbody = document.createElement('tbody');
-                
+                // Yorumlar Listesi
+                const listUl = document.createElement('ul');
+                listUl.className = 'student-comments-list';
+
                 comments.forEach(comment => {
-                    const tr = document.createElement('tr');
-                    // Hücrelere 'data-label' ekleyebiliriz ama şu anki tasarımda gerek yok.
-                    tr.innerHTML = `
-                        <td class="place-cell" style="font-weight:bold; color:#e67e22;">${comment.place}</td>
+                    const li = document.createElement('li');
+                    li.className = 'student-comment-item';
+                    
+                    // ID gösterimi (Örneğin: "1", "2")
+                    const badgeContent = comment.sortId !== 999 ? comment.sortId : '?';
+
+                    li.innerHTML = `
+                        <div class="place-badge" title="Mekan No">${badgeContent}</div>
                         
-                        <td class="comment-cell">
-                            <div class="comment-wrapper" onclick="this.classList.toggle('expanded')" title="Okumak için tıkla">
-                                ${comment.comment}
+                        <div class="comment-content-area">
+                            <span class="place-name-title">${comment.place_name}</span>
+                            <div class="comment-text-full">${escapeHtml(comment.comment)}</div>
+                            <div style="font-size:11px; color:#999; margin-top:5px;">
+                                ${formatDate(comment.created_at)}
                             </div>
-                        </td>
-                        
-                        <td class="date-cell">${comment.date}</td>
-                        
-                        <td class="action-cell">
-                            <button onclick="deleteCommentDB(${comment.id})" style="background:#c0392b; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:12px;">Sil</button>
-                        </td>
+                        </div>
+
+                        <button class="delete-comment-btn" onclick="deleteCommentDB(${comment.id})" title="Yorumu Sil">
+                            🗑️
+                        </button>
                     `;
-                    tbody.appendChild(tr);
+                    listUl.appendChild(li);
                 });
 
-                table.appendChild(tbody);
-                card.appendChild(title);
-                card.appendChild(table);
-                container.appendChild(card);
+                groupCard.innerHTML = headerHtml;
+                groupCard.appendChild(listUl);
+                container.appendChild(groupCard);
             });
+
         })
-        .catch(err => console.error(err));
+        .catch(err => {
+            console.error(err);
+            container.innerHTML = '<p style="color:red; text-align:center;">Veriler yüklenirken hata oluştu.</p>';
+        });
 }
 
-// event delegation: sayfa yüklendiğinde çalıştır
-document.addEventListener('DOMContentLoaded', function () {
-    // tüm mevcut ve gelecekteki yorum sarmalayıcılar için
-    const container = document.getElementById('grouped-comments-container');
-
-    if (!container) return;
-
-    container.addEventListener('click', function (e) {
-        // tıklanan en yakın .comment-wrapper öğesini al
-        const wrapper = e.target.closest('.comment-wrapper');
-        if (!wrapper) return;
-
-        // Eğer içinde link/button gibi tıklanabilir öğe varsa (ör: <a>), onları etkileme
-        const interactive = e.target.closest('a, button, input, textarea, select');
-        if (interactive) return; // normal davranışı bozma
-
-        toggleComment(wrapper);
-    });
-});
-
-function toggleComment(el) {
-    const isExpanded = el.classList.contains('expanded');
-
-    if (isExpanded) {
-        // Kapat: max-height'ı collapsed değere döndür
-        el.classList.remove('expanded');
-        // inline maxHeight'ı null yapınca CSS'deki collapsed değere döner ve transition işler
-        el.style.maxHeight = null;
-        el.setAttribute('aria-expanded', 'false');
-    } else {
-        // Aç: gerçek içeriğe göre maxHeight ayarla
-        el.classList.add('expanded');
-        // önce maxHeight'ı collapsed değerden alttan biraz büyük bir değere getir (zorunlu değil)
-        // sonra scrollHeight veriyoruz — böylece animasyon doğal olur
-        const scrollH = el.scrollHeight;
-        el.style.maxHeight = scrollH + 'px';
-        el.setAttribute('aria-expanded', 'true');
-    }
+// Yardımcı Fonksiyon: HTML Injection koruması
+function escapeHtml(text) {
+    if (!text) return "";
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
+
+// Yardımcı Fonksiyon: Tarih formatı (Veritabanından gelen tarih string ise)
+function formatDate(dateString) {
+    if(!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute:'2-digit' });
+}
+
+
+
 
 window.deleteCommentDB = (id) => {
     if(confirm("Yorumu silmek istiyor musunuz?")) {

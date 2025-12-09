@@ -107,22 +107,23 @@
     </div>
 
     <div id="dashboard-modal" class="modal">
-    <div class="modal-content dashboard-content">
-        
-        <span class="close-dashboard-btn">&times;</span>
-        
-        <div class="dashboard-header">
-            <h2>Öğrenci Yorumları Paneli</h2>
-        </div>
+      <div class="modal-content dashboard-content">
+          
+          <span class="close-dashboard-btn">&times;</span>
+          
+          <div class="dashboard-header">
+              <h2>Öğrenci Seyahatnameleri (Öğretmen Paneli)</h2>
+              <div class="refresh-info">Veriler öğrenci ismine göre gruplanmıştır.</div>
+          </div>
 
-        <div id="grouped-comments-container" style="overflow-y: auto; flex: 1; padding-right: 10px;">
-            </div>
+          <div id="grouped-comments-container" class="grouped-container">
+              </div>
 
-        <p id="no-comments-msg" style="display:none; text-align:center; color:#777; margin-top:20px;">
-            Henüz hiç yorum yapılmamış.
-        </p>
+          <p id="no-comments-msg" style="display:none; text-align:center; color:#777; margin-top:20px;">
+              Henüz hiç yorum yapılmamış.
+          </p>
+      </div>
     </div>
-</div>
 
     <div id="student-login-modal" class="modal">
         <div class="modal-content login-content">
@@ -131,7 +132,7 @@
             
             <h2 class="login-title">Öğrenci Girişi</h2>
             
-            <p class="login-desc">Adınızı ve Soyadınızı bir kere giriniz.</p>
+            <p class="login-desc">Adınızı ve Soyadınızı giriniz.</p>
             
             <input type="text" id="student-name-input" placeholder="Ad Soyad" class="login-input">
             
