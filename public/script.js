@@ -483,10 +483,15 @@ function loadAdminComments() {
                 comments.forEach(comment => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td style="color:#e67e22; font-weight:bold;">${comment.place}</td>
-                        <td style="font-style:italic;">"${comment.comment}"</td>
-                        <td style="color:#999; font-size:11px;">${comment.date}</td>
-                        <td style="text-align:center;">
+                        <td style="color:#e67e22; font-weight:bold; vertical-align: top;">${comment.place}</td>
+                        
+                        <td style="vertical-align: top;">
+                            <div class="comment-wrapper" onclick="this.classList.toggle('expanded')" title="Tamamını görmek için tıklayın">
+                                "${comment.comment}"
+                            </div>
+                        </td>
+                        <td style="color:#999; font-size:11px; vertical-align: top;">${comment.date}</td>
+                        <td style="text-align:center; vertical-align: top;">
                             <button onclick="deleteCommentDB(${comment.id})" style="background:#c0392b; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer;">Sil</button>
                         </td>
                     `;

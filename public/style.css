@@ -245,7 +245,8 @@ p {
 
 /* --- 2. BÜYÜK DASHBOARD PENCERESİ TASARIMI --- */
 .dashboard-content {
-    width: 1000px !important; /* Geniş ekran */
+    max-width: 70% !important;
+    width: 900px !important; /* Geniş ekran */
     height: 600px !important;
     max-width: 95%;
     flex-direction: column !important;
@@ -521,6 +522,36 @@ button[type="submit"]:hover { background: #e67e22; }
 
 /* style.css içine */
 .hidden { display: none !important; }
+
+/* --- YORUM KATLAMA STİLLERİ --- */
+
+/* Yorumun kutusu: Varsayılan olarak kısıtlı yükseklik */
+.comment-wrapper {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;      /* En fazla 2 satır göster */
+    -webkit-box-orient: vertical;
+    overflow: hidden;           /* Taşan kısmı gizle */
+    text-overflow: ellipsis;    /* Sonuna ... koy */
+    line-height: 1.4;           /* Satır yüksekliği */
+    max-height: 3em;            /* Yaklaşık 2 satır yüksekliği */
+    cursor: pointer;            /* Tıklanabilir olduğunu göster */
+    transition: all 0.3s ease;  /* Yumuşak geçiş efekti */
+    position: relative;
+}
+
+/* Yorumun üzerine gelince ipucu (isteğe bağlı) */
+.comment-wrapper:hover {
+    color: #e67e22; /* Turuncu renk ile belirginleştir */
+}
+
+/* Tıklandığında eklenecek sınıf: Kilidi açar */
+.comment-wrapper.expanded {
+    -webkit-line-clamp: unset;  /* Sınırı kaldır */
+    overflow: visible;
+    max-height: none;           /* Yüksekliği serbest bırak */
+    cursor: text;               /* İmleci normale çevir */
+    color: #333;                /* Rengi normale çevir */
+}
 
 /* -- MOBİL UYUMLULUK (RESPONSIVE) -- */
 @media (max-width: 768px) {
