@@ -224,7 +224,7 @@ places.forEach(place => {
             item.classList.remove('active');
         });
         li.classList.add('active');
-        map.flyTo([place.lat, place.lng], 14);
+        map.flyTo([place.lat, place.lng], 18);
     };
     
     placeList.appendChild(li);
