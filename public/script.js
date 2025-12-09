@@ -505,6 +505,46 @@ function loadAdminComments() {
         .catch(err => console.error(err));
 }
 
+// event delegation: sayfa yüklendiğinde çalıştır
+document.addEventListener('DOMContentLoaded', function () {
+    // tüm mevcut ve gelecekteki yorum sarmalayıcılar için
+    const container = document.getElementById('grouped-comments-container');
+
+    if (!container) return;
+
+    container.addEventListener('click', function (e) {
+        // tıklanan en yakın .comment-wrapper öğesini al
+        const wrapper = e.target.closest('.comment-wrapper');
+        if (!wrapper) return;
+
+        // Eğer içinde link/button gibi tıklanabilir öğe varsa (ör: <a>), onları etkileme
+        const interactive = e.target.closest('a, button, input, textarea, select');
+        if (interactive) return; // normal davranışı bozma
+
+        toggleComment(wrapper);
+    });
+});
+
+function toggleComment(el) {
+    const isExpanded = el.classList.contains('expanded');
+
+    if (isExpanded) {
+        // Kapat: max-height'ı collapsed değere döndür
+        el.classList.remove('expanded');
+        // inline maxHeight'ı null yapınca CSS'deki collapsed değere döner ve transition işler
+        el.style.maxHeight = null;
+        el.setAttribute('aria-expanded', 'false');
+    } else {
+        // Aç: gerçek içeriğe göre maxHeight ayarla
+        el.classList.add('expanded');
+        // önce maxHeight'ı collapsed değerden alttan biraz büyük bir değere getir (zorunlu değil)
+        // sonra scrollHeight veriyoruz — böylece animasyon doğal olur
+        const scrollH = el.scrollHeight;
+        el.style.maxHeight = scrollH + 'px';
+        el.setAttribute('aria-expanded', 'true');
+    }
+}
+
 window.deleteCommentDB = (id) => {
     if(confirm("Yorumu silmek istiyor musunuz?")) {
         fetch(`/api/comments/${id}`, { method: 'DELETE' })
